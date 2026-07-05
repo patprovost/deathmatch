@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+			"label": "Deno Build",
+            "type": "deno",
+            "command": "task",
+            "args": ["build"],
+            "problemMatcher": ["$deno"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "clear": true
+            },			
+        }
+    ]
+}

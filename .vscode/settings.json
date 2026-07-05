@@ -1,0 +1,5 @@
+{
+    "deno.enablePaths": ["./src"],
+    "deno.config": "./deno.json",
+    "editor.defaultFormatter": "denoland.vscode-deno",
+}

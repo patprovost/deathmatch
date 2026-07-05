@@ -1,0 +1,26 @@
+{
+    "tasks": {
+        "check": "deno check src/main.ts",
+        "build": "deno check src/main.ts && deno bundle --output dist/index.js --sourcemap=inline src/main.ts",
+        "dev": "deno bundle --output dist/index.js --watch src/main.ts",
+        "dist": "deno check src/main.ts && deno bundle --output dist/index.js --minify src/main.ts",
+        "serve": "deno run --allow-net --allow-read jsr:@std/http/file-server dist"
+    },
+    "compilerOptions": {
+        "lib": ["dom", "dom.iterable", "dom.asynciterable", "esnext"],
+        "module": "esnext",
+        "moduleResolution": "bundler"
+    },
+    "fmt": {
+        "include": ["src/"],
+        "indentWidth": 4,
+        "lineWidth": 120
+    },
+    "lint": {
+        "include": ["src/"],
+        "rules": {
+            "tags": ["recommended"],
+            "exclude": ["no-explicit-any"]
+        }
+    }
+}
