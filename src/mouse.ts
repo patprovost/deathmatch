@@ -1,5 +1,7 @@
 import * as Display from "./display.ts";
 
+const eventPosition = { x: 0, y: 0 };
+const designPosition = { x: 0, y: 0 };
 let leftIsPressed = false;
 let middleIsPressed = false;
 let rightIsPressed = false;
@@ -25,6 +27,11 @@ document.addEventListener("mouseup", (event) => {
     } else if (event.button === 2) {
         rightIsPressed = false;
     }
+});
+
+Display.canvas.addEventListener("mousemove", (event) => {
+    eventPosition.x = event.offsetX;
+    eventPosition.y = event.offsetY;
 });
 
 function poll(button: number) {
@@ -54,4 +61,10 @@ function consume(button: number) {
     }
 }
 
-export { consume, poll };
+function getPosition() {
+    designPosition.x = Math.round(eventPosition.x * Display.designScale);
+    designPosition.y = Math.round(eventPosition.y * Display.designScale);
+    return designPosition;
+}
+
+export { consume, getPosition, poll };

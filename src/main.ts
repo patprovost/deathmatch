@@ -9,9 +9,10 @@ function init() {}
 
 function update() {
     if (Keyboard.consume("KeyS")) Loop.stop();
-    if (Mouse.consume(0)) console.log("Left Click");
-    if (Mouse.consume(1)) console.log("Middle Click");
-    if (Mouse.consume(2)) console.log("Right Click");
+    if (Mouse.consume(2)) {
+        const { x, y } = Mouse.getPosition();
+        console.log(`Cursor: (${x}, ${y})`);
+    }
 }
 
 function render() {

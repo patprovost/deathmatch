@@ -1,6 +1,7 @@
 const designResolution = { width: 1920, height: 1080 };
 const aspectRatio = calculateAspectRatio(designResolution.width, designResolution.height);
 let renderScale: number;
+let designScale: number;
 
 const canvas = document.createElement("canvas");
 const context = canvas.getContext("2d")!;
@@ -47,6 +48,7 @@ function resizeCanvas() {
     canvas.width = width * devicePixelRatio;
     canvas.height = height * devicePixelRatio;
     renderScale = (width / designResolution.width) * devicePixelRatio;
+    designScale = designResolution.width / width;
 }
 
-export { canvas, context, renderScale };
+export { canvas, context, designScale, renderScale };
