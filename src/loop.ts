@@ -8,15 +8,20 @@ let previousTime: number;
 
 function loop(currentTime: number) {
     if (!isRunning) return;
-    const deltaTime = currentTime - previousTime;
-    previousTime = currentTime;
-    lagTime += deltaTime;
-    while (lagTime >= timestep) {
-        update();
-        lagTime -= timestep;
+    try {
+        const deltaTime = currentTime - previousTime;
+        previousTime = currentTime;
+        lagTime += deltaTime;
+        while (lagTime >= timestep) {
+            update();
+            lagTime -= timestep;
+        }
+        render();
+        requestAnimationFrame(loop);
+    } catch (error) {
+        console.error(error);
+        stop();
     }
-    render();
-    requestAnimationFrame(loop);
 }
 
 function start(initFn: () => void, updateFn: () => void, renderFn: () => void) {
