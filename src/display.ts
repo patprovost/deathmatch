@@ -14,6 +14,8 @@ container.append(canvas);
 document.body.style.backgroundColor = "black";
 document.body.style.margin = "0";
 document.body.append(container);
+canvas.tabIndex = 0;
+canvas.focus({ focusVisible: false });
 
 const resizeObserver = new ResizeObserver(resizeCanvas);
 resizeObserver.observe(container);
@@ -47,4 +49,4 @@ function resizeCanvas() {
     renderScale = (width / designResolution.width) * devicePixelRatio;
 }
 
-export { context, renderScale };
+export { canvas, context, renderScale };
