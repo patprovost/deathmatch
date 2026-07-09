@@ -1,22 +1,22 @@
-import * as Display from "./display.ts";
-import * as Loop from "./loop.ts";
-import * as Keyboard from "./keyboard.ts";
-import * as Mouse from "./mouse.ts";
+import * as display from "./display.ts";
+import * as loop from "./loop.ts";
+import * as keyboard from "./keyboard.ts";
+import * as mouse from "./mouse.ts";
 
-Loop.start(init, update, render);
+loop.start(init, update, render);
 
 function init() {}
 
 function update() {
-    if (Keyboard.consume("KeyS")) Loop.stop();
-    if (Mouse.consume(2)) {
-        const { x, y } = Mouse.getPosition();
+    if (keyboard.consume("KeyS")) loop.stop();
+    if (mouse.consume(2)) {
+        const { x, y } = mouse.getPosition();
         console.log(`Cursor: (${x}, ${y})`);
     }
 }
 
 function render() {
-    const { context, renderScale } = Display;
+    const { context, renderScale } = display;
     context.resetTransform();
     context.scale(renderScale, renderScale);
     context.fillStyle = "white";

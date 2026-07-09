@@ -1,4 +1,4 @@
-import * as Display from "./display.ts";
+import * as display from "./display.ts";
 
 const keys: Record<string, boolean> = {
     Digit1: false,
@@ -40,14 +40,14 @@ const keys: Record<string, boolean> = {
 };
 const keySet: Set<string> = new Set(Object.keys(keys));
 
-Display.canvas.addEventListener("keyup", (event) => {
+display.canvas.addEventListener("keyup", (event) => {
     if (keySet.has(event.code)) {
         keys[event.code] = false;
         event.preventDefault();
     }
 });
 
-Display.canvas.addEventListener("keydown", (event) => {
+display.canvas.addEventListener("keydown", (event) => {
     if (keySet.has(event.code)) {
         if (!event.repeat) {
             keys[event.code] = true;

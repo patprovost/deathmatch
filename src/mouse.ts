@@ -1,4 +1,4 @@
-import * as Display from "./display.ts";
+import * as display from "./display.ts";
 
 const eventPosition = { x: 0, y: 0 };
 const designPosition = { x: 0, y: 0 };
@@ -6,9 +6,9 @@ let leftIsPressed = false;
 let middleIsPressed = false;
 let rightIsPressed = false;
 
-Display.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+display.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 
-Display.canvas.addEventListener("mousedown", (event) => {
+display.canvas.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
         leftIsPressed = true;
     } else if (event.button === 1) {
@@ -29,7 +29,7 @@ document.addEventListener("mouseup", (event) => {
     }
 });
 
-Display.canvas.addEventListener("mousemove", (event) => {
+display.canvas.addEventListener("mousemove", (event) => {
     eventPosition.x = event.offsetX;
     eventPosition.y = event.offsetY;
 });
@@ -62,8 +62,8 @@ function consume(button: number) {
 }
 
 function getPosition() {
-    designPosition.x = Math.round(eventPosition.x * Display.designScale);
-    designPosition.y = Math.round(eventPosition.y * Display.designScale);
+    designPosition.x = Math.round(eventPosition.x * display.designScale);
+    designPosition.y = Math.round(eventPosition.y * display.designScale);
     return designPosition;
 }
 
