@@ -10,12 +10,14 @@ function create(name: string): Entity {
         transform: {
             local: { x: 0, y: 0, z: 0, r: 0 },
             world: { x: 0, y: 0, z: 0, r: 0 },
+            previous: { x: 0, y: 0, z: 0, r: 0 },
         },
         parent: null,
         children: [],
         update: null,
         render: null,
         params: null,
+        isNew: true,
         needDestroy: false,
         isDestroyed: false,
     };
@@ -61,6 +63,10 @@ function releaseChildren(entity: Entity) {
 
 function updateAll() {
     for (let i = 0; i < entities.length; i++) {
+        Object.assign(entities[i].transform.previous, entities[i].transform.world);
+    }
+
+    for (let i = 0; i < entities.length; i++) {
         entities[i].update?.();
     }
 
@@ -74,15 +80,27 @@ function updateAll() {
             updateWorldTransform(entities[i]);
         }
     }
+
+    for (let i = 0; i < entities.length; i++) {
+        const entity = entities[i];
+        if (entity.isNew) {
+            Object.assign(entity.transform.previous, entity.transform.world);
+            entity.isNew = false;
+        }
+    }
 }
 
-function renderAll(context: CanvasRenderingContext2D) {
+function renderAll(context: CanvasRenderingContext2D, interpolation: number) {
     entities.sort((a, b) => a.transform.world.z - b.transform.world.z);
 
     for (let i = 0; i < entities.length; i++) {
         const entity = entities[i];
         if (entity.render) {
-            const { x, y, r } = entity.transform.world;
+            const { previous, world } = entity.transform;
+            const x = previous.x + (world.x - previous.x) * interpolation;
+            const y = previous.y + (world.y - previous.y) * interpolation;
+            const r = previous.r + (world.r - previous.r) * interpolation;
+
             context.save();
             context.translate(x, y);
             context.rotate(r * degreesToRadians);

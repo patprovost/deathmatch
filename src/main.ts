@@ -39,13 +39,13 @@ function update() {
     entity.updateAll();
 }
 
-function render() {
+function render(interpolation: number) {
     const { context, renderScale } = display;
     context.resetTransform();
     context.scale(renderScale, renderScale);
     context.fillStyle = "white";
     context.fillRect(0, 0, 1920, 1080);
-    entity.renderAll(context);
+    entity.renderAll(context, interpolation);
 }
 
 function createRectangle(name: string, width: number, height: number, color: string) {

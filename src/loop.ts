@@ -1,7 +1,7 @@
 const updatesPerSecond = 60;
 const timestep = 1000 / updatesPerSecond;
 let update: () => void;
-let render: () => void;
+let render: (interpolation: number) => void;
 let isRunning: boolean;
 let lagTime: number;
 let previousTime: number;
@@ -12,11 +12,14 @@ function loop(currentTime: number) {
         const deltaTime = currentTime - previousTime;
         previousTime = currentTime;
         lagTime += deltaTime;
+
         while (lagTime >= timestep) {
             update();
             lagTime -= timestep;
         }
-        render();
+
+        const interpolation = lagTime / timestep;
+        render(interpolation);
         requestAnimationFrame(loop);
     } catch (error) {
         console.error(error);
@@ -24,7 +27,7 @@ function loop(currentTime: number) {
     }
 }
 
-function start(initFn: () => void, updateFn: () => void, renderFn: () => void) {
+function start(initFn: () => void, updateFn: () => void, renderFn: (interpolation: number) => void) {
     if (isRunning) return;
     initFn();
     update = updateFn;

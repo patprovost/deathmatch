@@ -7,12 +7,13 @@ export interface Transform {
 
 export interface Entity {
     name: string;
-    transform: { local: Transform; world: Transform };
+    transform: { local: Transform; world: Transform; previous: Transform };
     parent: Entity | null;
     children: Entity[];
     update: (() => void) | null;
     render: ((context: CanvasRenderingContext2D) => void) | null;
     params: unknown;
+    isNew: boolean;
     needDestroy: boolean;
     isDestroyed: boolean;
 }
