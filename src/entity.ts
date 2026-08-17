@@ -1,165 +1,176 @@
-import type { Entity, Transform } from "./types.ts";
-
 const degreesToRadians = Math.PI / 180;
 const entities: Entity[] = [];
 const entitiesToDestroy: Entity[] = [];
 
-function create(name: string): Entity {
-    const entity: Entity = {
-        name,
-        transform: {
-            local: { x: 0, y: 0, z: 0, r: 0 },
-            world: { x: 0, y: 0, z: 0, r: 0 },
-            previous: { x: 0, y: 0, z: 0, r: 0 },
-        },
-        parent: null,
-        children: [],
-        update: null,
-        render: null,
-        params: null,
-        isNew: true,
-        needDestroy: false,
-        isDestroyed: false,
-    };
-
-    entities.push(entity);
-    return entity;
+class Transform {
+    public x: number = 0;
+    public y: number = 0;
+    public z: number = 0;
+    public r: number = 0;
 }
 
-function destroy(entity: Entity) {
-    if (!entity.needDestroy) {
-        entitiesToDestroy.push(entity);
-        entity.needDestroy = true;
+class Entity {
+    protected localTransform = new Transform();
+    protected worldTransform = new Transform();
+    protected previousTransform = new Transform();
+    protected parent: Entity | null = null;
+    protected children: Entity[] = [];
+    protected isNew = true;
+    protected needDestroy = false;
+    protected isDestroyed = false;
+    protected params: unknown = null;
+    protected collider: unknown = null;
+    protected update?: () => void;
+    protected render?(context: CanvasRenderingContext2D): void;
+
+    constructor(public readonly name: string) {
+        entities.push(this);
     }
-}
 
-function attach(entity: Entity, parent: Entity) {
-    if (!entity.parent) {
-        entity.parent = parent;
-        parent.children.push(entity);
+    public destroy() {
+        if (!this.needDestroy) {
+            entitiesToDestroy.push(this);
+            this.needDestroy = true;
+        }
     }
-}
 
-function detach(entity: Entity) {
-    if (entity.parent) {
-        const index = entity.parent.children.indexOf(entity);
+    public attachTo(parent: Entity) {
+        if (!this.parent) {
+            this.parent = parent;
+            parent.children.push(this);
+        }
+    }
+
+    public detach() {
+        if (this.parent) {
+            const index = this.parent.children.indexOf(this);
+            if (index !== -1) {
+                this.parent.children.splice(index, 1);
+                this.parent = null;
+                Object.assign(this.localTransform, this.worldTransform);
+            }
+        }
+    }
+
+    public releaseChildren() {
+        for (let i = 0; i < this.children.length; i++) {
+            const child = this.children[i];
+            child.parent = null;
+            Object.assign(child.localTransform, child.worldTransform);
+        }
+        this.children.length = 0;
+    }
+
+    public getTransform(): Readonly<Transform> {
+        return this.localTransform;
+    }
+
+    public setTransform(transform: Partial<Transform>) {
+        Object.assign(this.localTransform, transform);
+    }
+
+    public hasParent() {
+        return this.parent ? true : false;
+    }
+
+    public setUpdate(updateFn: () => void) {
+        this.update = updateFn;
+    }
+
+    private updateWorldTransform() {
+        if (this.parent) {
+            const parentWorldTransform = this.parent.worldTransform;
+            const parentWorldRotationInRadians = parentWorldTransform.r * degreesToRadians;
+
+            const cos = Math.cos(parentWorldRotationInRadians);
+            const sin = Math.sin(parentWorldRotationInRadians);
+            const rotatedX = this.localTransform.x * cos - this.localTransform.y * sin;
+            const rotatedY = this.localTransform.x * sin + this.localTransform.y * cos;
+
+            this.worldTransform.x = parentWorldTransform.x + rotatedX;
+            this.worldTransform.y = parentWorldTransform.y + rotatedY;
+            this.worldTransform.z = parentWorldTransform.z + this.localTransform.z;
+            this.worldTransform.r = parentWorldTransform.r + this.localTransform.r;
+        } else {
+            Object.assign(this.worldTransform, this.localTransform);
+        }
+
+        for (let i = 0; i < this.children.length; i++) {
+            this.children[i].updateWorldTransform();
+        }
+    }
+
+    private destroyInternal() {
+        if (this.isDestroyed) return;
+
+        if (this.parent) {
+            const index = this.parent.children.indexOf(this);
+            if (index !== -1) {
+                this.parent.children.splice(index, 1);
+            }
+        }
+
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            this.children[i].destroyInternal();
+        }
+
+        const index = entities.indexOf(this);
         if (index !== -1) {
-            entity.parent.children.splice(index, 1);
-            entity.parent = null;
-            Object.assign(entity.transform.local, entity.transform.world);
+            entities.splice(index, 1);
+        }
+
+        this.isDestroyed = true;
+    }
+
+    static updateAll() {
+        for (let i = 0; i < entities.length; i++) {
+            Object.assign(entities[i].previousTransform, entities[i].worldTransform);
+        }
+
+        for (let i = 0; i < entities.length; i++) {
+            entities[i].update?.();
+        }
+
+        for (let i = 0; i < entitiesToDestroy.length; i++) {
+            entitiesToDestroy[i].destroyInternal();
+        }
+        entitiesToDestroy.length = 0;
+
+        for (let i = 0; i < entities.length; i++) {
+            if (!entities[i].parent) {
+                entities[i].updateWorldTransform();
+            }
+        }
+
+        for (let i = 0; i < entities.length; i++) {
+            const entity = entities[i];
+            if (entity.isNew) {
+                Object.assign(entity.previousTransform, entity.worldTransform);
+                entity.isNew = false;
+            }
+        }
+    }
+
+    static renderAll(context: CanvasRenderingContext2D, interpolation: number) {
+        entities.sort((a, b) => a.worldTransform.z - b.worldTransform.z);
+
+        for (let i = 0; i < entities.length; i++) {
+            const entity = entities[i];
+            if (entity.render) {
+                const previous = entity.previousTransform;
+                const world = entity.worldTransform;
+                const x = previous.x + (world.x - previous.x) * interpolation;
+                const y = previous.y + (world.y - previous.y) * interpolation;
+                const r = previous.r + (world.r - previous.r) * interpolation;
+
+                context.save();
+                context.translate(x, y);
+                context.rotate(r * degreesToRadians);
+                entity.render(context);
+                context.restore();
+            }
         }
     }
 }
 
-function releaseChildren(entity: Entity) {
-    const children = entity.children;
-    for (let i = 0; i < children.length; i++) {
-        const child = children[i];
-        child.parent = null;
-        Object.assign(child.transform.local, child.transform.world);
-    }
-    children.length = 0;
-}
-
-function updateAll() {
-    for (let i = 0; i < entities.length; i++) {
-        Object.assign(entities[i].transform.previous, entities[i].transform.world);
-    }
-
-    for (let i = 0; i < entities.length; i++) {
-        entities[i].update?.();
-    }
-
-    for (let i = 0; i < entitiesToDestroy.length; i++) {
-        destroyEntity(entitiesToDestroy[i]);
-    }
-    entitiesToDestroy.length = 0;
-
-    for (let i = 0; i < entities.length; i++) {
-        if (!entities[i].parent) {
-            updateWorldTransform(entities[i]);
-        }
-    }
-
-    for (let i = 0; i < entities.length; i++) {
-        const entity = entities[i];
-        if (entity.isNew) {
-            Object.assign(entity.transform.previous, entity.transform.world);
-            entity.isNew = false;
-        }
-    }
-}
-
-function renderAll(context: CanvasRenderingContext2D, interpolation: number) {
-    entities.sort((a, b) => a.transform.world.z - b.transform.world.z);
-
-    for (let i = 0; i < entities.length; i++) {
-        const entity = entities[i];
-        if (entity.render) {
-            const { previous, world } = entity.transform;
-            const x = previous.x + (world.x - previous.x) * interpolation;
-            const y = previous.y + (world.y - previous.y) * interpolation;
-            const r = previous.r + (world.r - previous.r) * interpolation;
-
-            context.save();
-            context.translate(x, y);
-            context.rotate(r * degreesToRadians);
-            entity.render(context);
-            context.restore();
-        }
-    }
-}
-
-function setTransform(entity: Entity, transform: Partial<Transform>) {
-    Object.assign(entity.transform.local, transform);
-}
-
-function updateWorldTransform(entity: Entity) {
-    const entityLocalTransform = entity.transform.local;
-    const entityWorldTransform = entity.transform.world;
-
-    if (entity.parent) {
-        const parentWorldTransform = entity.parent.transform.world;
-        const parentWorldRotationInRadians = parentWorldTransform.r * degreesToRadians;
-
-        const cos = Math.cos(parentWorldRotationInRadians);
-        const sin = Math.sin(parentWorldRotationInRadians);
-        const rotatedX = entityLocalTransform.x * cos - entityLocalTransform.y * sin;
-        const rotatedY = entityLocalTransform.x * sin + entityLocalTransform.y * cos;
-
-        entityWorldTransform.x = parentWorldTransform.x + rotatedX;
-        entityWorldTransform.y = parentWorldTransform.y + rotatedY;
-        entityWorldTransform.z = parentWorldTransform.z + entityLocalTransform.z;
-        entityWorldTransform.r = parentWorldTransform.r + entityLocalTransform.r;
-    } else {
-        Object.assign(entityWorldTransform, entityLocalTransform);
-    }
-
-    for (let i = 0; i < entity.children.length; i++) {
-        updateWorldTransform(entity.children[i]);
-    }
-}
-
-function destroyEntity(entity: Entity) {
-    if (entity.isDestroyed) return;
-
-    if (entity.parent) {
-        const index = entity.parent.children.indexOf(entity);
-        if (index !== -1) {
-            entity.parent.children.splice(index, 1);
-        }
-    }
-
-    for (let i = entity.children.length - 1; i >= 0; i--) {
-        destroyEntity(entity.children[i]);
-    }
-
-    const index = entities.indexOf(entity);
-    if (index !== -1) {
-        entities.splice(index, 1);
-    }
-
-    entity.isDestroyed = true;
-}
-
-export { attach, create, destroy, detach, releaseChildren, renderAll, setTransform, updateAll };
+export { Entity };

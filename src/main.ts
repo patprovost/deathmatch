@@ -1,32 +1,36 @@
-import type { ParamsCircle, ParamsRectangle } from "./types.ts";
 import * as display from "./display.ts";
 import * as loop from "./loop.ts";
 import * as keyboard from "./keyboard.ts";
 import * as mouse from "./mouse.ts";
-import * as entity from "./entity.ts";
+import { Entity } from "./entity.ts";
+import { Circle, Rectangle } from "./shapes.ts";
 
 loop.start(init, update, render);
 
 function init() {
-    const rectangle = createRectangle("rectangle", 100, 100, getRandomRGB());
-    const circle = createCircle("circle", 50, getRandomRGB());
-    entity.setTransform(rectangle, { x: 580, y: 540 });
-    entity.setTransform(circle, { z: 1 });
-    entity.attach(circle, rectangle);
+    const rectangle = new Rectangle("rectangle", 100, 100, getRandomRGB());
+    const circle = new Circle("circle", 50, getRandomRGB());
+    rectangle.setTransform({ x: 580, y: 540 });
+    circle.attachTo(rectangle);
+    circle.setTransform({ z: 1 });
 
-    rectangle.update = () => {
-        rectangle.transform.local.x += 1;
-        rectangle.transform.local.r += 1;
-        if (rectangle.transform.local.r > 360) {
-            entity.releaseChildren(rectangle);
-            entity.destroy(rectangle);
+    const rectangleUpdateFn = () => {
+        const { x, r } = rectangle.getTransform();
+        if (r <= 360) {
+            rectangle.setTransform({ x: x + 1, r: r + 1 });
+        } else {
+            rectangle.releaseChildren();
+            rectangle.destroy();
         }
     };
 
-    circle.update = () => {
-        const velocity = circle.parent ? 1 : 2;
-        circle.transform.local.x -= velocity;
+    const circleUpdateFn = () => {
+        const velocity = circle.hasParent() ? 1 : 2;
+        circle.setTransform({ x: circle.getTransform().x - velocity });
     };
+
+    rectangle.setUpdate(rectangleUpdateFn);
+    circle.setUpdate(circleUpdateFn);
 }
 
 function update() {
@@ -35,8 +39,7 @@ function update() {
         const { x, y } = mouse.getPosition();
         console.log(`Cursor: (${x}, ${y})`);
     }
-
-    entity.updateAll();
+    Entity.updateAll();
 }
 
 function render(interpolation: number) {
@@ -45,39 +48,7 @@ function render(interpolation: number) {
     context.scale(renderScale, renderScale);
     context.fillStyle = "white";
     context.fillRect(0, 0, 1920, 1080);
-    entity.renderAll(context, interpolation);
-}
-
-function createRectangle(name: string, width: number, height: number, color: string) {
-    const rectangle = entity.create(name);
-    rectangle.params = { width, height, color } as ParamsRectangle;
-
-    rectangle.render = (context: CanvasRenderingContext2D) => {
-        const { width, height, color } = rectangle.params as ParamsRectangle;
-        context.beginPath();
-        context.rect(-width / 2, -height / 2, width, height);
-        context.fillStyle = color;
-        context.fill();
-        context.stroke();
-    };
-
-    return rectangle;
-}
-
-function createCircle(name: string, radius: number, color: string) {
-    const circle = entity.create(name);
-    circle.params = { radius, color } as ParamsCircle;
-
-    circle.render = (context: CanvasRenderingContext2D) => {
-        const { radius, color } = circle.params as ParamsCircle;
-        context.beginPath();
-        context.arc(0, 0, radius, 0, Math.PI * 2);
-        context.fillStyle = color;
-        context.fill();
-        context.stroke();
-    };
-
-    return circle;
+    Entity.renderAll(context, interpolation);
 }
 
 function getRandomRGB() {
