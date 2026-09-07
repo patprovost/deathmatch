@@ -1,3 +1,6 @@
+import type { Collider } from "./collision.ts";
+import { getEntityCollisions } from "./collision.ts";
+
 const degreesToRadians = Math.PI / 180;
 const entities: Entity[] = [];
 const entitiesToDestroy: Entity[] = [];
@@ -10,6 +13,7 @@ class Transform {
 }
 
 class Entity {
+    public owner: Entity;
     protected localTransform = new Transform();
     protected worldTransform = new Transform();
     protected previousTransform = new Transform();
@@ -19,11 +23,14 @@ class Entity {
     protected needDestroy = false;
     protected isDestroyed = false;
     protected params: unknown = null;
-    protected collider: unknown = null;
-    protected update?: () => void;
+    protected collider: Collider | null = null;
+    protected onUpdate?: (self: Entity) => void;
+    protected onCollision?: (self: Entity, other: Entity) => void;
     protected render?(context: CanvasRenderingContext2D): void;
+    protected updateCollider?(): void;
 
     constructor(public readonly name: string) {
+        this.owner = this;
         entities.push(this);
     }
 
@@ -73,8 +80,16 @@ class Entity {
         return this.parent ? true : false;
     }
 
-    public setUpdate(updateFn: () => void) {
-        this.update = updateFn;
+    public getCollider(): Readonly<Collider> | null {
+        return this.collider;
+    }
+
+    public setUpdateFn(updateFn?: (self: Entity) => void) {
+        this.onUpdate = updateFn;
+    }
+
+    public setCollisionFn(collisionFn?: (self: Entity, other: Entity) => void) {
+        this.onCollision = collisionFn;
     }
 
     private updateWorldTransform() {
@@ -128,7 +143,7 @@ class Entity {
         }
 
         for (let i = 0; i < entities.length; i++) {
-            entities[i].update?.();
+            entities[i].onUpdate?.(entities[i]);
         }
 
         for (let i = 0; i < entitiesToDestroy.length; i++) {
@@ -143,6 +158,18 @@ class Entity {
         }
 
         for (let i = 0; i < entities.length; i++) {
+            if (entities[i].collider) {
+                entities[i].updateCollider?.();
+            }
+        }
+
+        const collisions = getEntityCollisions(entities);
+        for (const { entityA, entityB } of collisions) {
+            entityA?.onCollision?.(entityA, entityB!);
+            entityB?.onCollision?.(entityB, entityA!);
+        }
+
+        for (let i = 0; i < entities.length; i++) {
             const entity = entities[i];
             if (entity.isNew) {
                 Object.assign(entity.previousTransform, entity.worldTransform);
@@ -152,7 +179,7 @@ class Entity {
     }
 
     static renderAll(context: CanvasRenderingContext2D, interpolation: number) {
-        entities.sort((a, b) => a.worldTransform.z - b.worldTransform.z);
+        entities.sort((a, b) => b.worldTransform.z - a.worldTransform.z);
 
         for (let i = 0; i < entities.length; i++) {
             const entity = entities[i];
