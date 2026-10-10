@@ -1,4 +1,5 @@
 import type { Collider } from "./collision.ts";
+import type { Params } from "./params.ts";
 import { getEntityCollisions } from "./collision.ts";
 
 const degreesToRadians = Math.PI / 180;
@@ -22,7 +23,7 @@ class Entity {
     protected isNew = true;
     protected needDestroy = false;
     protected isDestroyed = false;
-    protected params: unknown = null;
+    protected params: Params | null = null;
     protected collider: Collider | null = null;
     protected onUpdate?: (self: Entity) => void;
     protected onCollision?: (self: Entity, other: Entity) => void;
