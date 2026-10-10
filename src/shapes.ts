@@ -1,5 +1,5 @@
 import { Entity } from "./entity.ts";
-import { CircleCollider, RectangleCollider } from "./collision.ts";
+import { CapsuleCollider, CircleCollider, RectangleCollider } from "./collision.ts";
 
 interface RectangleParams {
     width: number;
@@ -8,6 +8,13 @@ interface RectangleParams {
 }
 
 interface CircleParams {
+    radius: number;
+    color: string;
+}
+
+interface CapsuleParams {
+    width: number;
+    height: number;
     radius: number;
     color: string;
 }
@@ -58,4 +65,27 @@ class Circle extends Entity {
     }
 }
 
-export { Circle, Rectangle };
+class Capsule extends Entity {
+    constructor(name: string, width: number, height: number, radius: number, color: string) {
+        super(name);
+        this.params = { width, height, radius, color };
+        this.collider = new CapsuleCollider();
+    }
+
+    protected override render(context: CanvasRenderingContext2D) {
+        const { width, height, radius, color } = this.params as CapsuleParams;
+        context.beginPath();
+        context.roundRect(-width / 2, -height / 2, width, height, radius);
+        context.fillStyle = color;
+        context.fill();
+        context.stroke();
+    }
+
+    protected override updateCollider() {
+        const { x, y, r } = this.worldTransform;
+        const { width, radius } = this.params as CapsuleParams;
+        (this.collider as CapsuleCollider).update(x, y, r, width, radius);
+    }
+}
+
+export { Capsule, Circle, Rectangle };
