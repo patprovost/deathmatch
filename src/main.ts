@@ -4,67 +4,86 @@ import * as keyboard from "./keyboard.ts";
 import * as mouse from "./mouse.ts";
 import { Entity } from "./entity.ts";
 import { Capsule, Circle, Rectangle } from "./shapes.ts";
+import { Figure } from "./figure.ts";
 
 loop.start(init, update, render);
 
 function init() {
+    const figure = new Figure("figure", getRandomRGB(), 1);
+    figure.setTransform({ x: 960, y: 540 });
+    figure.setPose({
+        pelvis: { r: -90 },
+        lumbar: { r: 0 },
+        lowerThorax: { r: 0 },
+        upperThorax: { r: 0 },
+        cervical: { r: 0 },
+        shoulderL: { r: 90 },
+        elbowL: { r: -90 },
+        shoulderR: { r: -90 },
+        elbowR: { r: 90 },
+        hipL: { r: 45 },
+        kneeL: { r: -45 },
+        hipR: { r: -45 },
+        kneeR: { r: 45 },
+    });
+
     const rectangleA = new Rectangle("rectangleA", 100, 100, getRandomRGB());
-    rectangleA.setTransform({ x: 480, y: 155 });
+    rectangleA.setTransform({ x: 680, y: 155 });
     rectangleA.setUpdateFn(moveRight);
     rectangleA.setCollisionFn(stopMoving);
 
     const rectangleAA = new Rectangle("rectangleAA", 100, 100, getRandomRGB());
-    rectangleAA.setTransform({ x: 1440, y: 155 });
+    rectangleAA.setTransform({ x: 1240, y: 155 });
     rectangleAA.setUpdateFn(moveLeft);
     rectangleAA.setCollisionFn(stopMoving);
 
     const circleA = new Circle("circleA", 50, getRandomRGB());
-    circleA.setTransform({ x: 480, y: 309 });
+    circleA.setTransform({ x: 680, y: 309 });
     circleA.setUpdateFn(moveRight);
     circleA.setCollisionFn(stopMoving);
 
     const circleAA = new Circle("circleAA", 50, getRandomRGB());
-    circleAA.setTransform({ x: 1440, y: 309 });
+    circleAA.setTransform({ x: 1240, y: 309 });
     circleAA.setUpdateFn(moveLeft);
     circleAA.setCollisionFn(stopMoving);
 
     const rectangleB = new Rectangle("rectangleB", 100, 100, getRandomRGB());
-    rectangleB.setTransform({ x: 480, y: 463 });
+    rectangleB.setTransform({ x: 680, y: 463 });
     rectangleB.setUpdateFn(moveRight);
     rectangleB.setCollisionFn(stopMoving);
 
     const circleB = new Circle("circleB", 50, getRandomRGB());
-    circleB.setTransform({ x: 1440, y: 463 });
+    circleB.setTransform({ x: 1240, y: 463 });
     circleB.setUpdateFn(moveLeft);
     circleB.setCollisionFn(stopMoving);
 
     const capsuleA = new Capsule("capsuleA", 100, 50, 25, getRandomRGB());
-    capsuleA.setTransform({ x: 480, y: 617 });
+    capsuleA.setTransform({ x: 680, y: 617 });
     capsuleA.setUpdateFn(moveRight);
     capsuleA.setCollisionFn(stopMoving);
 
     const rectangleC = new Rectangle("rectangleC", 100, 100, getRandomRGB());
-    rectangleC.setTransform({ x: 1440, y: 617 });
+    rectangleC.setTransform({ x: 1240, y: 617 });
     rectangleC.setUpdateFn(moveLeft);
     rectangleC.setCollisionFn(stopMoving);
 
     const capsuleB = new Capsule("capsuleB", 100, 50, 25, getRandomRGB());
-    capsuleB.setTransform({ x: 480, y: 771 });
+    capsuleB.setTransform({ x: 680, y: 771 });
     capsuleB.setUpdateFn(moveRight);
     capsuleB.setCollisionFn(stopMoving);
 
     const circleC = new Circle("circleC", 50, getRandomRGB());
-    circleC.setTransform({ x: 1440, y: 771 });
+    circleC.setTransform({ x: 1240, y: 771 });
     circleC.setUpdateFn(moveLeft);
     circleC.setCollisionFn(stopMoving);
 
     const capsuleC = new Capsule("capsuleC", 100, 50, 25, getRandomRGB());
-    capsuleC.setTransform({ x: 480, y: 926 });
+    capsuleC.setTransform({ x: 680, y: 926 });
     capsuleC.setUpdateFn(moveRight);
     capsuleC.setCollisionFn(stopMoving);
 
     const capsuleD = new Capsule("capsuleD", 100, 50, 25, getRandomRGB());
-    capsuleD.setTransform({ x: 1440, y: 926 });
+    capsuleD.setTransform({ x: 1240, y: 926 });
     capsuleD.setUpdateFn(moveLeft);
     capsuleD.setCollisionFn(stopMoving);
 }
@@ -96,12 +115,12 @@ function getRandomRGB() {
 }
 
 function moveRight(self: Entity) {
-    const newX = self.getTransform().x + 10;
+    const newX = self.getTransform().x + 1;
     self.setTransform({ x: newX });
 }
 
 function moveLeft(self: Entity) {
-    const newX = self.getTransform().x - 10;
+    const newX = self.getTransform().x - 1;
     self.setTransform({ x: newX });
 }
 

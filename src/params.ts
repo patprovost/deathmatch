@@ -16,6 +16,10 @@ interface CapsuleParams {
     color: string;
 }
 
-type Params = RectangleParams | CircleParams | CapsuleParams;
+interface JointParams {
+    radius: number;
+}
 
-export type { CapsuleParams, CircleParams, Params, RectangleParams };
+type Params = RectangleParams | CircleParams | CapsuleParams | JointParams;
+
+export type { CapsuleParams, CircleParams, JointParams, Params, RectangleParams };

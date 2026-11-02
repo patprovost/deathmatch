@@ -75,7 +75,7 @@ function getEntityCollisions(entities: Entity[]) {
         for (let j = i + 1; j < entities.length; j++) {
             const colliderB = entities[j].getCollider();
             if (!colliderB) continue;
-            if (entities[i].owner === entities[j].owner) continue;
+            if (entities[i].getOwner() === entities[j].getOwner()) continue;
 
             if (checkCollision(colliderA, colliderB)) {
                 let collision: Collision;

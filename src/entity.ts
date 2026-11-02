@@ -14,7 +14,6 @@ class Transform {
 }
 
 class Entity {
-    public owner: Entity;
     protected localTransform = new Transform();
     protected worldTransform = new Transform();
     protected previousTransform = new Transform();
@@ -30,9 +29,26 @@ class Entity {
     protected render?(context: CanvasRenderingContext2D): void;
     protected updateCollider?(): void;
 
-    constructor(public readonly name: string) {
-        this.owner = this;
+    constructor(public readonly name: string, protected owner?: Entity) {
+        this.owner = owner ?? this;
         entities.push(this);
+    }
+
+    public getOwner() {
+        return this.owner;
+    }
+
+    public setOwner(owner: Entity, includeChildren = false) {
+        const previousOwner = this.owner;
+        this.owner = owner;
+        if (includeChildren) {
+            for (let i = 0; i < this.children.length; i++) {
+                const child = this.children[i];
+                if (child.owner === previousOwner) {
+                    child.setOwner(owner, true);
+                }
+            }
+        }
     }
 
     public destroy() {
@@ -201,4 +217,4 @@ class Entity {
     }
 }
 
-export { Entity };
+export { Entity, Transform };
