@@ -62,6 +62,9 @@ document.addEventListener("visibilitychange", () => {
 });
 
 display.canvas.addEventListener("keydown", (event) => {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+    }
     if (keySet.has(event.code)) {
         if (!event.repeat) {
             keys[event.code] = true;
