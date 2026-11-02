@@ -40,10 +40,24 @@ const keys: Record<string, boolean> = {
 };
 const keySet: Set<string> = new Set(Object.keys(keys));
 
-display.canvas.addEventListener("keyup", (event) => {
+addEventListener("blur", () => {
+    for (const key of keySet) {
+        keys[key] = false;
+    }
+});
+
+document.addEventListener("keyup", (event) => {
     if (keySet.has(event.code)) {
         keys[event.code] = false;
         event.preventDefault();
+    }
+});
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        for (const key of keySet) {
+            keys[key] = false;
+        }
     }
 });
 
@@ -53,6 +67,12 @@ display.canvas.addEventListener("keydown", (event) => {
             keys[event.code] = true;
         }
         event.preventDefault();
+    }
+});
+
+display.canvas.addEventListener("blur", () => {
+    for (const key of keySet) {
+        keys[key] = false;
     }
 });
 

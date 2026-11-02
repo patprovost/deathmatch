@@ -6,6 +6,30 @@ let leftIsPressed = false;
 let middleIsPressed = false;
 let rightIsPressed = false;
 
+addEventListener("blur", () => {
+    leftIsPressed = false;
+    middleIsPressed = false;
+    rightIsPressed = false;
+});
+
+document.addEventListener("mouseup", (event) => {
+    if (event.button === 0) {
+        leftIsPressed = false;
+    } else if (event.button === 1) {
+        middleIsPressed = false;
+    } else if (event.button === 2) {
+        rightIsPressed = false;
+    }
+});
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        leftIsPressed = false;
+        middleIsPressed = false;
+        rightIsPressed = false;
+    }
+});
+
 display.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 
 display.canvas.addEventListener("mousedown", (event) => {
@@ -19,19 +43,15 @@ display.canvas.addEventListener("mousedown", (event) => {
     }
 });
 
-document.addEventListener("mouseup", (event) => {
-    if (event.button === 0) {
-        leftIsPressed = false;
-    } else if (event.button === 1) {
-        middleIsPressed = false;
-    } else if (event.button === 2) {
-        rightIsPressed = false;
-    }
-});
-
 display.canvas.addEventListener("mousemove", (event) => {
     eventPosition.x = event.offsetX;
     eventPosition.y = event.offsetY;
+});
+
+display.canvas.addEventListener("blur", () => {
+    leftIsPressed = false;
+    middleIsPressed = false;
+    rightIsPressed = false;
 });
 
 function poll(button: number) {
